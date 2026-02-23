@@ -1,0 +1,48 @@
+name: Sleep Video Generator
+
+# This allows you to trigger it manually from the "Actions" tab
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: 'Visual Style (stars, rain, nebula)'
+        required: true
+        default: 'stars'
+      hours:
+        description: 'Duration (1 to 12)'
+        required: true
+        default: '10'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python Libraries
+        run: |
+          pip install numpy opencv-python-headless scipy
+
+      - name: Build the Video
+        # We pass the manual inputs directly into your Makefile
+        run: make FLAVOR=${{ github.event.inputs.flavor }} HOURS=${{ github.event.inputs.hours }}
+
+      - name: Upload Finished Video
+        # This saves the file on GitHub's servers for you to download
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs.flavor }}-${{ github.event.inputs.hours }}hr-video
+          path: "*.mp4"
+          retention-days: 7 # Auto-deletes after 7 days to save space
