@@ -1,33 +1,33 @@
-FLAVOR ?= stars
+# Variables passed from GitHub Actions
+FLAVOR ?= rain
 HOURS ?= 10
-PYTHON = python3
-FFMPEG = ffmpeg
+TOPIC ?= Healing
+SEED_MINS = 10
+REPEATS = $(shell echo $$(($(HOURS) * 60 / $(SEED_MINS))))
 
-# File names
-AUDIO_SEED = pro_sleep_seed.wav
-VIDEO_SEED = visual_$(FLAVOR).mp4
-MODULE = seed_$(FLAVOR).mp4
-FINAL = sleep_$(FLAVOR)_$(HOURS)hr.mp4
-LIST = list_$(FLAVOR).txt
+# File Names
+AUDIO_SEED = seed_audio.wav
+VIDEO_SEED = seed_video.mp4
+CONCAT_LIST = inputs.txt
+FINAL_NAME = "Aura_Labs_$(FLAVOR)_$(HOURS)hr_$(TOPIC).mp4"
 
-all: $(FINAL)
+all: clean generate_seeds loop finalize
 
-$(AUDIO_SEED): pro_audio.py
-	$(PYTHON) pro_audio.py
+generate_seeds:
+	@echo "Step 1: Generating 10-minute seeds..."
+	python pro_audio.py
+	python generate_visual.py --flavor $(FLAVOR)
 
-$(VIDEO_SEED): generate_visual.py
-	$(PYTHON) generate_visual.py $(FLAVOR)
+loop:
+	@echo "Step 2: Creating concat list for $(REPEATS) repeats..."
+	@for i in $$(seq 1 $(REPEATS)); do echo "file '$(VIDEO_SEED)'" >> $(CONCAT_LIST); done
+	@echo "Step 3: Stitched 10-hour render (Stream Copying)..."
+	ffmpeg -f concat -safe 0 -i $(CONCAT_LIST) -i $(AUDIO_SEED) -c copy -map 0:v:0 -map 1:a:0 output_full.mp4
 
-$(MODULE): $(AUDIO_SEED) $(VIDEO_SEED)
-	$(FFMPEG) -y -i $(VIDEO_SEED) -i $(AUDIO_SEED) -c:v libx264 -crf 23 -c:a aac -shortest $(MODULE)
-
-$(FINAL): $(MODULE)
-	@rm -f $(LIST)
-	@LOOPS=$$(($(HOURS) * 6)); \
-	for i in $$(seq 1 $$LOOPS); do echo "file '$(MODULE)'" >> $(LIST); done
-	$(FFMPEG) -y -f concat -safe 0 -i $(LIST) -c copy $(FINAL)
-	@rm $(LIST)
-	@echo "Build Complete: $(FINAL)"
+finalize:
+	@echo "Step 4: Renaming for SEO..."
+	mv output_full.mp4 $(FINAL_NAME)
+	@echo "Build Complete: $(FINAL_NAME)"
 
 clean:
-	rm -f *.wav *.mp4 *.txt
+	rm -f *.mp4 *.wav *.txt
