@@ -14,7 +14,7 @@ CONCAT_LIST = inputs.txt
 all: clean generate_seeds loop finalize
 
 generate_seeds:
-	@echo "Step 1: Generating seeds..."
+	@echo "Step 1: Generating dynamic seeds for $(FREQ)..."
 	python pro_audio.py --freq "$(FREQ)"
 	python generate_visual.py --mode $(FLAVOR) --topic "$(TOPIC)" --freq "$(FREQ)"
 
