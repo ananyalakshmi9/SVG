@@ -30,7 +30,8 @@ def generate_pro_sleep_audio(duration_sec=600, sample_rate=44100):
 
     audio = np.vstack((left_mix, right_mix)).T
     audio = np.clip(audio, -1, 1)
-    wavfile.write('pro_sleep_seed.wav', sample_rate, (audio * 32767).astype(np.uint16))
+    # Use int16 (signed) for standard 16-bit WAV files
+    wavfile.write('pro_sleep_seed.wav', sample_rate, (audio * 32767).astype(np.int16))
 
 if __name__ == "__main__":
     generate_pro_sleep_audio()
