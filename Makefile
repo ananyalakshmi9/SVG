@@ -16,7 +16,7 @@ all: clean generate_seeds loop finalize
 generate_seeds:
 	@echo "Step 1: Generating 10-minute seeds..."
 	python pro_audio.py
-	python generate_visual.py --flavor $(FLAVOR)
+	python generate_visual.py --mode $(FLAVOR) --topic "$(TOPIC)" --freq "$(FREQ)"
 
 loop:
 	@echo "Step 2: Creating concat list for $(REPEATS) repeats..."
