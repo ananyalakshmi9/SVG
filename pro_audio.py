@@ -63,6 +63,14 @@ def generate_aura_audio(duration_sec=600, sample_rate=44100, freq_input="432"):
     # Safety clip to ensure no sample exceeds 1.0 or -1.0
     audio = np.clip(audio, -1, 1)
     
-    # Convert to 16-bit PCM for standard WAV compatibility
+   # Convert to 16-bit PCM for standard WAV compatibility
     output_file = 'seed_audio.wav'
-    wavfile.write(output_file, sample_rate, (audio * 32767).astype(np
+    wavfile.write(output_file, sample_rate, (audio * 32767).astype(np.int16))
+    print(f"SUCCESS: {output_file} generated at {sample_rate}Hz.")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Aura Labs Audio Engine")
+    parser.add_argument("--freq", default="432", help="Input frequency string (e.g., '14Hz + 40Hz')")
+    args = parser.parse_args()
+    
+    generate_aura_audio(freq_input=args.freq)
