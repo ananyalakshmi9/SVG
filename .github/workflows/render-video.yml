@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       topic:
-        description: 'Video Intent (e.g., Stress Relief, DNA Repair)'
+        description: 'Video Intent (e.g., Stress Relief)'
         required: true
         default: 'Deep Healing Sleep'
       flavor:
@@ -12,9 +12,9 @@ on:
         required: true
         default: 'rain'
       freq:
-        description: 'Healing Frequencies (e.g., 528Hz + 432Hz)'
+        description: 'Healing Frequencies (e.g., 528Hz)'
         required: true
-        default: '528Hz + 432Hz'
+        default: '528Hz'
       hours:
         description: 'Duration in hours'
         required: true
@@ -37,20 +37,19 @@ jobs:
           sudo apt-get update && sudo apt-get install -y ffmpeg
           pip install numpy opencv-python-headless scipy
 
-      - name: Generate SEO Metadata
-        run: |
-          python -c "
-          topic = '${{ github.event.inputs.topic }}'
-          flavor = '${{ github.event.inputs.flavor }}'
-          freq = '${{ github.event.inputs.freq }}'
-          print('\n' + '='*20 + ' COPY TO YOUTUBE ' + '='*20)
-          print(f'TITLE: {freq} | {topic}: Whole Body Regeneration ({flavor.title()})')
-          print(f'\nDESCRIPTION:\nWelcome to Aura Labs.\nThis 10-hour session targets {topic.lower()} using {freq}.\n\n#AuraLabs #Healing #{flavor}')
-          print('='*54)
-          "
-
       - name: Execute Build
-        run: make all FLAVOR=${{ github.event.inputs.flavor }} HOURS=${{ github.event.inputs.hours }} TOPIC="${{ github.event.inputs.topic }}"
+        run: |
+          make all \
+            FLAVOR=${{ github.event.inputs.flavor }} \
+            HOURS=${{ github.event.inputs.hours }} \
+            TOPIC="${{ github.event.inputs.topic }}" \
+            FREQ="${{ github.event.inputs.freq }}"
+
+      - name: SEO Summary
+        run: |
+          echo "### 🚀 YOUTUBE METADATA" >> $GITHUB_STEP_SUMMARY
+          echo "**Title:** ${{ github.event.inputs.freq }} | ${{ github.event.inputs.topic }}: Whole Body Regeneration" >> $GITHUB_STEP_SUMMARY
+          echo "**Description:** Welcome to Aura Labs. Targeted ${{ github.event.inputs.topic }} using ${{ github.event.inputs.freq }}." >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Finished Video
         uses: actions/upload-artifact@v4
